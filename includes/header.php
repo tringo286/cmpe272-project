@@ -9,21 +9,35 @@
 <body>
 <header>
     <div class="header-left">
-        <h1>MarketHub</h1>
+        <a href="/index.php" style="text-decoration: none; color: inherit;">
+            <h1>MarketHub</h1>
+        </a>
     </div>
+
     <div class="header-center">
         <form action="/search.php" method="get" class="search-form">
             <input type="text" name="q" placeholder="Search products..." aria-label="Search products" />
             <button type="submit">🔍</button>
         </form>
     </div>
+
     <nav class="header-right">
-        <a href="/account.php" class="account-link">Hello, Sign in</a>
-        <a href="/orders.php" class="orders-link">Orders</a>
-        <a href="/cart.php" class="cart-link" aria-label="Cart">
-            🛒<span class="cart-count">0</span>
-        </a>
+        <?php if (isset($_SESSION['username'])): ?>
+            <span class="account-link">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
+            <a href="/orders.php" class="orders-link">Orders</a>
+            <a href="/cart.php" class="cart-link" aria-label="Cart">
+                🛒<span class="cart-count">0</span>
+            </a>
+            <a href="/logout.php" class="logout-link">Logout</a>
+        <?php else: ?>
+            <a href="/login.php" class="account-link">Hello, Log in</a>
+            <a href="/orders.php" class="orders-link">Orders</a>
+            <a href="/cart.php" class="cart-link" aria-label="Cart">
+                🛒<span class="cart-count">0</span>
+            </a>
+        <?php endif; ?>
     </nav>
+
 </header>
 
 <style>
@@ -120,6 +134,16 @@
         padding: 0 0.4rem;
         font-weight: bold;
         font-size: 0.8rem;
+    }
+
+    .logout-link {
+        color: white;
+        text-decoration: none;
+        margin-left: 0.5rem;
+    }
+
+    .logout-link:hover {
+        text-decoration: underline;
     }
 
     /* Mobile and small screens: stack vertically and center */
