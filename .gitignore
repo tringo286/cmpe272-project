@@ -4,6 +4,6 @@
 # Ignore vendor directory
 /vendor/
 
-# Ignore OS files
+g# Ignore OS files
 .DS_Store
 Thumbs.db
