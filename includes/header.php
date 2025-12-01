@@ -15,8 +15,8 @@
     </div>
 
     <div class="header-center">
-        <form action="/search.php" method="get" class="search-form">
-            <input type="text" name="q" placeholder="Search products..." aria-label="Search products" />
+        <form method="GET" class="search-form">
+            <input type="text" name="q" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>" placeholder="Search products..." aria-label="Search products" />
             <button type="submit">🔍</button>
         </form>
     </div>

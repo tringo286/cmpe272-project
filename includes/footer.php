@@ -3,7 +3,7 @@
 
     <footer class="site-footer">
         <p>
-            &copy; <?php echo date('Y'); ?> Simple Marketplace. All rights reserved.
+            &copy; <?php echo date('Y'); ?>MarketHub. All rights reserved.
         </p>
         <p>
             <a href="#" class="footer-link">Privacy Policy</a> |
