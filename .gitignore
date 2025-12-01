@@ -4,9 +4,6 @@
 # Ignore vendor directory
 /vendor/
 
-# Ignore composer lock (optional)
-composer.lock
-
 # Ignore OS files
 .DS_Store
 Thumbs.db
