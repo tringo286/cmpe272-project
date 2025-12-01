@@ -34,3 +34,7 @@ RUN a2enmod rewrite
 EXPOSE 80
 
 # Default command (from base image) runs Apache in foreground
+
+# Install mysqli extension
+RUN docker-php-ext-install mysqli
+
