@@ -135,10 +135,14 @@ $stmt->close();
 <section class="partners-inline-modern">
     <div class="partners-row">
         <span class="partners-text">Our trusted partners</span>
-        <a href="https://php-mysql-hosting-project.onrender.com" target="_blank" class="partner-btn">TechPro</a>
-        <a href="https://lambertnguyen.cloud/" target="_blank" class="partner-btn">Lambert Nguyen Company</a>
-        <a href="https://partner2.com" target="_blank" class="partner-btn">PureBite</a>
+        
+        <a href="redirect.php?company_id=1&url=https://php-mysql-hosting-project.onrender.com" target="_blank" class="partner-btn">TechPro</a>
+        
+        <a href="redirect.php?company_id=2&url=https://lambertnguyen.cloud/" target="_blank" class="partner-btn">Lambert Nguyen Company</a>
+        
+        <a href="redirect.php?company_id=3&url=https://partner2.com" target="_blank" class="partner-btn">PureBite</a>
     </div>
+
 </section>
 
 <!-- ======================== Content Wrapper ======================== -->
