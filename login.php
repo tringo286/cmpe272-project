@@ -1,7 +1,6 @@
 <?php
 session_start();
 require __DIR__ . '/db.php';
-include __DIR__ . '/includes/header.php';
 
 // Get redirect URL from GET (default to index.php)
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
@@ -31,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter a valid email and password.';
     }
 }
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <style>
@@ -136,6 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     text-decoration: underline;
 }
 </style>
+
+
 
 <main>
   <div class="login-page">

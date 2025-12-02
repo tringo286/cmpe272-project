@@ -1,7 +1,6 @@
 <?php
 session_start();
 require __DIR__ . '/db.php';
-include __DIR__ . '/includes/header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
@@ -35,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+include __DIR__ . '/includes/header.php';
 ?>
 
 <style>

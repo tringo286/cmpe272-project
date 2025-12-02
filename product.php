@@ -1,7 +1,6 @@
 <?php
 session_start();
 include __DIR__ . '/db.php';
-include __DIR__ . '/includes/header.php';
 
 // Get product ID
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -44,6 +43,8 @@ if (!$product) {
     header('Location: index.php');
     exit();
 }
+
+include __DIR__ . '/includes/header.php';
 
 // ===================== IMAGE LOGIC =====================
 $imageName = strtolower(str_replace(' ', '-', $product['title'])) . ".png";
