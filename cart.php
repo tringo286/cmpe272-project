@@ -1,7 +1,6 @@
 <?php
 session_start();
 include __DIR__ . '/db.php';
-include __DIR__ . '/includes/header.php';
 
 // Redirect to login if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -34,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: cart.php");
     exit;
 }
+
+include __DIR__ . '/includes/header.php';
 
 // Fetch cart items
 $cartItems = [];

@@ -1,20 +1,6 @@
 <?php
-// =====================
-// header.php
-// =====================
-
-// Start session immediately (only if not started)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Include DB connection (if needed for cart)
-if (!isset($mysqli)) {
-    include __DIR__ . '/db.php';
-}
-
-// Get cart count if user is logged in
 $cartCount = 0;
+
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
     $stmt = $mysqli->prepare("SELECT SUM(quantity) as total FROM cart WHERE user_id = ?");
@@ -45,11 +31,11 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <div class="header-center">
-       <form method="GET" class="search-form" action="/index.php">
-            <input type="text" name="q" placeholder="Search products..." aria-label="Search products" 
-                   value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>" />
+       <form method="GET" class="search-form">
+            <input type="text" name="q" placeholder="Search products..." aria-label="Search products" />
             <button type="submit">🔍</button>
         </form>
+
     </div>
 
     <nav class="header-right">
@@ -68,153 +54,156 @@ if (isset($_SESSION['user_id'])) {
             </a>
         <?php endif; ?>
     </nav>
+
 </header>
 
 <style>
-/* ========== Header CSS ========== */
-header {
-    display: flex;
-    align-items: center;
-    background-color: #232f3e;
-    color: white;
-    padding: 1rem;
-    gap: 1rem;
-    font-family: Arial, sans-serif;
-    flex-wrap: nowrap;
-    flex-direction: row;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;    
-    cursor: pointer;
-    min-width: 180px;
-    justify-content: center;
-}
-
-.header-left h1 {
-    font-size: 1.75rem;
-    margin: 0;
-    user-select: none;
-}
-
-.header-center {
-    flex-grow: 1;
-    margin: 0;
-}
-
-.search-form {
-    display: flex;
-    width: 100%;
-}
-
-.search-form input[type="text"] {
-    flex-grow: 1;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.25rem 0 0 0.25rem;
-    font-size: 1rem;
-}
-
-.search-form button {
-    background-color: #febd69;
-    border: none;
-    padding: 0 1rem;
-    border-radius: 0 0.25rem 0.25rem 0;
-    cursor: pointer;
-    font-size: 1.2rem;
-}
-
-.search-form button:hover {
-    background-color: #f3a847;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    font-size: 1rem;
-    min-width: 200px;
-    justify-content: flex-end;
-}
-
-.header-right a {
-    color: white;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.header-right a:hover {
-    text-decoration: underline;
-}
-
-.cart-link {
-    position: relative;
-    font-size: 1.8rem;
-}
-
-.cart-count {
-    position: absolute;
-    top: -0.3rem;
-    right: -0.5rem;
-    background: #f08804;
-    border-radius: 9999px;
-    color: black;
-    padding: 0 0.4rem;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-
-.logout-link {
-    color: white;
-    text-decoration: none;
-    margin-left: 0.5rem;
-}
-
-.logout-link:hover {
-    text-decoration: underline;
-}
-
-/* Mobile and small screens: stack vertically */
-@media (max-width: 600px) {
     header {
-        flex-direction: column;
+        display: flex;
         align-items: center;
-        flex-wrap: wrap;
-        padding: 0.5rem 0.75rem;
-        gap: 0.75rem;
+        background-color: #232f3e;
+        color: white;
+        padding: 1rem 1rem;
+        gap: 1rem;
+        font-family: Arial, sans-serif;
+        flex-wrap: nowrap; 
+        flex-direction: row; 
     }
 
-    .header-left,
-    .header-center,
-    .header-right {
-        flex: 1 1 100%;
+   .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;    
+        cursor: pointer;
+        min-width: 180px;
         justify-content: center;
-        margin: 0;
     }
 
     .header-left h1 {
-        font-size: 1.3rem;
+        font-size: 1.75rem;
+        margin: 0;
+
+        user-select: none;
+    }
+
+    .header-center {
+        flex-grow: 1;
+        margin: 0;    
+    }
+
+    .search-form {
+        display: flex;
+        width: 100%;
     }
 
     .search-form input[type="text"] {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.5rem;
+        flex-grow: 1;
+        padding: 0.5rem 0.75rem;
+        border: none;
+        border-radius: 0.25rem 0 0 0.25rem;
+        font-size: 1rem;
     }
 
     .search-form button {
-        font-size: 1rem;
-        padding: 0 0.8rem;
+        background-color: #febd69;
+        border: none;
+        padding: 0 1rem;
+        border-radius: 0 0.25rem 0.25rem 0;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .search-form button:hover {
+        background-color: #f3a847;
     }
 
     .header-right {
-        font-size: 0.85rem;
-        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        font-size: 1rem;
+        min-width: 200px;
+        justify-content: flex-end;
+    }
+
+    .header-right a {
+        color: white;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .header-right a:hover {
+        text-decoration: underline;
     }
 
     .cart-link {
-        font-size: 1.3rem;
+        position: relative;
+        font-size: 1.8rem;
     }
-}
+
+    .cart-count {
+        position: absolute;
+        top: -0.3rem;
+        right: -0.5rem;
+        background: #f08804;
+        border-radius: 9999px;
+        color: black;
+        padding: 0 0.4rem;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+
+    .logout-link {
+        color: white;
+        text-decoration: none;
+        margin-left: 0.5rem;
+    }
+
+    .logout-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Mobile and small screens: stack vertically and center */
+    @media (max-width: 600px) {
+        header {
+            flex-direction: column;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0.5rem 0.75rem;
+            gap: 0.75rem;
+        }
+
+        .header-left,
+        .header-center,
+        .header-right {
+            flex: 1 1 100%;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .header-left h1 {
+            font-size: 1.3rem;
+        }
+
+        .search-form input[type="text"] {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.5rem;
+        }
+
+        .search-form button {
+            font-size: 1rem;
+            padding: 0 0.8rem;
+        }
+
+        .header-right {
+            font-size: 0.85rem;
+            gap: 0.5rem;
+        }
+
+        .cart-link {
+            font-size: 1.3rem;
+        }
+    }
 </style>
+
+<main>
