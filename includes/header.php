@@ -1,4 +1,9 @@
 <?php
+// Start session immediately
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $cartCount = 0;
 
 if (isset($_SESSION['user_id'])) {

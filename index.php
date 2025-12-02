@@ -171,7 +171,9 @@ $stmt->close();
                 ?>
                 <article class="card">
                     <div class="card-image">
-                        <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        <a href="product.php?id=<?php echo htmlspecialchars($product['id']); ?>">
+                            <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        </a>
                     </div>
                     <div class="details">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
