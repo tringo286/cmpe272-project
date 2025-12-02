@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     exit;
 }
 
-// Fetch product
+// Fetch product first
 $product = null;
 $stmtProduct = $mysqli->prepare("SELECT id, title, description, price, seller, details, slug FROM products WHERE id = ?");
 $stmtProduct->bind_param("i", $product_id);
@@ -59,6 +59,43 @@ if ($row = $result->fetch_assoc()) {
     $product = $row;
 }
 $stmtProduct->close();
+
+// If product not found, redirect
+if (!$product) {
+    header('Location: index.php');
+    exit();
+}
+
+// --- RECORD VISIT ---
+// Map seller to company_id
+$companyId = null;
+if (!empty($product['seller'])) {
+    $sellerName = trim($product['seller']);
+    $stmtCompany = $mysqli->prepare("
+        SELECT id 
+        FROM companies 
+        WHERE TRIM(LOWER(name)) = LOWER(?) 
+        LIMIT 1
+    ");
+    $stmtCompany->bind_param("s", $sellerName);
+    $stmtCompany->execute();
+    $stmtCompany->bind_result($companyId);
+    $stmtCompany->fetch();
+    $stmtCompany->close();
+}
+
+if ($userId && $companyId) {
+    $pageType = 'product';
+    $pageId   = $product_id;
+
+    $stmtVisit = $mysqli->prepare("
+        INSERT INTO user_activity (user_id, company_id, page_type, page_id, visited_at)
+        VALUES (?, ?, ?, ?, NOW())
+    ");
+    $stmtVisit->bind_param("iisi", $userId, $companyId, $pageType, $pageId);
+    $stmtVisit->execute();
+    $stmtVisit->close();
+}
 
 // Fetch reviews
 $reviews = [];

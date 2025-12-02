@@ -44,6 +44,12 @@ if (isset($_SESSION['user_id'])) {
             <a href="/cart.php" class="cart-link" aria-label="Cart">
                 🛒<span class="cart-count"><?php echo $cartCount; ?></span>
             </a>
+
+            <!-- Show Admin Panel link only for admins -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <a href="/admin.php" class="admin-link">Admin Panel</a>
+            <?php endif; ?>
+
             <a href="/logout.php" class="logout-link">Logout</a>
         <?php else: ?>
             <a href="/login.php" class="account-link">Hello, Log in</a>

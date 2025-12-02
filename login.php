@@ -8,18 +8,19 @@ $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     $password = $_POST['password'];
-    // Get redirect from POST (hidden input)
-    $redirect = isset($_POST['redirect']) ? $_POST['redirect'] : 'index.php';
+    $redirect = $_POST['redirect'] ?? 'index.php';
 
     if ($email && $password) {
-        $stmt = $mysqli->prepare('SELECT id, username, password FROM project_users WHERE email = ?');
+        $stmt = $mysqli->prepare('SELECT id, username, password, role FROM project_users WHERE email = ?');
         $stmt->bind_param('s', $email);
         $stmt->execute();
-        $stmt->bind_result($id, $username, $hashedPassword);
+        $stmt->bind_result($id, $username, $hashedPassword, $role);
 
         if ($stmt->fetch() && password_verify($password, $hashedPassword)) {
+            // Successful login
             $_SESSION['user_id'] = $id;
             $_SESSION['username'] = $username;
+            $_SESSION['role'] = $role; // store role in session
             header('Location: ' . $redirect);
             exit();
         } else {
@@ -32,6 +33,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 include __DIR__ . '/includes/header.php';
+?>
+
+<main>
+<div class="login-page">
+    <form method="post" action="login.php" class="login-form">
+        <h2>Login</h2>
+
+        <?php if (isset($error)): ?>
+            <div class="login-error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <!-- Hidden input for redirect -->
+        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autofocus>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Login</button>
+
+        <div class="signup-link">
+            Don't have an account? <a href="signup.php">Sign up here</a>
+        </div>
+    </form>
+</div>
+</main>
+
+<?php
+include __DIR__ . '/includes/footer.php';
 ?>
 
 <style>
@@ -86,14 +118,6 @@ include __DIR__ . '/includes/header.php';
     border-radius: 0.5rem;
     font-size: 1rem;
     box-sizing: border-box;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.login-page input[type="email"]:focus,
-.login-page input[type="password"]:focus {
-    border-color: #232f3e;
-    box-shadow: 0 0 5px rgba(35, 47, 62, 0.3);
-    outline: none;
 }
 
 .login-page button {
@@ -137,36 +161,3 @@ include __DIR__ . '/includes/header.php';
     text-decoration: underline;
 }
 </style>
-
-
-
-<main>
-  <div class="login-page">
-    <form method="post" action="login.php" class="login-form">
-        <h2>Login</h2>
-
-        <?php if (isset($error)): ?>
-            <div class="login-error"><?php echo htmlspecialchars($error); ?></div>
-        <?php endif; ?>
-
-        <!-- Hidden input for redirect -->
-        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required autofocus>
-
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-
-        <button type="submit">Login</button>
-
-        <div class="signup-link">
-            Don't have an account? <a href="signup.php">Sign up here</a>
-        </div>
-    </form>
-  </div>
-</main>
-
-<?php
-include __DIR__ . '/includes/footer.php';
-?>

@@ -131,6 +131,15 @@ $stmt->close();
     <p>Shop thousands of unique products from trusted sellers.</p>
 </section>
 
+<!-- ======================== Modern Partner Section ======================== -->
+<section class="partners-inline-modern">
+    <div class="partners-row">
+        <span class="partners-text">Our trusted partners</span>
+        <a href="https://php-mysql-hosting-project.onrender.com" target="_blank" class="partner-btn">TechPro</a>
+        <a href="https://lambertnguyen.cloud/" target="_blank" class="partner-btn">Lambert Nguyen Company</a>
+        <a href="https://partner2.com" target="_blank" class="partner-btn">PureBite</a>
+    </div>
+</section>
 
 <!-- ======================== Content Wrapper ======================== -->
 <section class="content-wrapper">
@@ -246,33 +255,69 @@ $stmt->close();
 
 
 <style>
-/* Keep your card-rating styling */
-.card .card-rating {
-    font-size: 1rem;
-    color: #fbbf24;
-}
-.card .card-rating span {
-    font-size: 0.85rem;
-    color: #555;
-}
-
-.btn-clear {
-    background: #e5e7eb;
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    text-decoration: none;
-    color: #111;
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    cursor: pointer;
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
+    .partners-inline-modern {
     text-align: center;
+    margin: 2rem 0;
 }
 
-.btn-clear:hover {
-    background: #d4d4d8;
+.partners-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
+.partners-text {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.partner-btn {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6); /* gradient for modern feel */
+    color: #fff;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;   /* pill shape */
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.partner-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+}
+    /* Keep your card-rating styling */
+    .card .card-rating {
+        font-size: 1rem;
+        color: #fbbf24;
+    }
+    .card .card-rating span {
+        font-size: 0.85rem;
+        color: #555;
+    }
+
+    .btn-clear {
+        background: #e5e7eb;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        color: #111;
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-clear:hover {
+        background: #d4d4d8;
+    }
 </style>
