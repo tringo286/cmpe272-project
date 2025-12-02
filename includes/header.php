@@ -20,7 +20,6 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="utf-8">
     <title>MarketHub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/../styles/index.css">
 </head>
 <body>
 <header>
@@ -58,6 +57,315 @@ if (isset($_SESSION['user_id'])) {
 </header>
 
 <style>
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        background: #f5f5f7;
+        color: #111827;
+    }
+
+    main {
+        max-width: 100vw;
+        margin: 1rem;
+        padding: 0 1rem;
+    }
+
+    .hero {
+        background: #111827;
+        color: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1.5rem 1.75rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .hero h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .hero p {
+        margin: 0 0 1rem;
+        font-size: 0.95rem;
+        color: #e5e7eb;
+    }
+
+    .hero a {
+        display: inline-block;
+        padding: 0.5rem 0.9rem;
+        border-radius: 999px;
+        background: #f97316;
+        color: #111827;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+    }
+
+    .hero a:hover {
+        background: #fb923c;
+    }
+
+    /* Product grid: 2 items per row */
+    .product-listings .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    /* CARD — Modern look */
+    .card {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+
+        padding: 1rem 1.1rem;
+        background: #ffffff;
+        border-radius: 1rem;
+
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0,0,0,0.05);
+
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Subtle card highlight glow */
+    .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2));
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        z-index: 0;
+    }
+
+    /* Hover effect */
+    .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    .card:hover::before {
+        opacity: 0.1;
+    }
+
+    /* IMAGE section */
+    .card-image {
+        width: 140px;
+        height: 140px;
+        border-radius: 0.6rem;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #f3f4f6;
+        position: relative;
+    }
+
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+
+        transition: transform 0.35s ease;
+    }
+
+    /* Image zoom on hover */
+    .card:hover .card-image img {
+        transform: scale(1.07);
+    }
+
+    /* DETAILS */
+    .card .details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card h3 {
+        margin: 0 0 0.25rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .card .seller {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-bottom: 0.6rem;
+    }
+
+    .card .price {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+        color: #1e40af;
+    }
+
+    .card .status {
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
+        color: #059669;
+    }
+
+    .card .extra-info p {
+        margin: 0;
+        font-size: 0.85rem;
+    }
+
+    /* ACTION BUTTONS */
+    .card .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.25s ease;
+    }
+
+    .card .btn-primary {
+        background: #3b82f6;
+        color: #f9fafb;
+    }
+
+    .card .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+    }
+
+    .card .btn-secondary {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .card .btn-secondary:hover {
+        background: #d1d5db;
+        transform: translateY(-2px);
+    }
+
+    /* CONTENT WRAPPER (Sidebar + Listings) */
+    .content-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+        gap: 2rem;
+        max-width: 1800px;
+        margin: 0 auto 3rem;
+        align-items: start;
+    }
+
+    /* SIDEBAR — unchanged */
+    .sidebar {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        font-size: 0.9rem;
+        color: #111827;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        position: sticky;
+        top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #111827;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+    }
+
+    .sidebar label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.6rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        padding: 0.35rem 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .sidebar label:hover {
+        background: #f3f4f6;
+    }
+
+    .sidebar input[type="checkbox"] {
+        accent-color: #3b82f6;
+    }
+
+    .sidebar button {
+        width: 100%;
+        padding: 0.5rem 0;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        margin-top: 0.5rem;
+        transition: background 0.2s ease;
+    }
+
+    .sidebar .btn-primary {
+        background: #3b82f6;
+        color: #ffffff;
+    }
+
+    .sidebar .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .sidebar .btn-secondary {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .sidebar .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .sidebar .reviews p {
+        margin: 0;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 900px) {
+        .sidebar {
+            position: relative;
+            top: auto;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .product-listings .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    
     header {
         display: flex;
         align-items: center;
