@@ -12,7 +12,7 @@ $userId = $_SESSION['user_id'];
 
 // Handle quantity update or remove actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['update_quantity']) && isset($_POST['cart_id'], $_POST['quantity'])) {
+    if (isset($_POST['update_quantity'], $_POST['cart_id'], $_POST['quantity'])) {
         $cartId = intval($_POST['cart_id']);
         $quantity = max(1, intval($_POST['quantity'])); // Minimum 1
         $stmt = $mysqli->prepare("UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?");
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    if (isset($_POST['remove_item']) && isset($_POST['cart_id'])) {
+    if (isset($_POST['remove_item'], $_POST['cart_id'])) {
         $cartId = intval($_POST['cart_id']);
         $stmt = $mysqli->prepare("DELETE FROM cart WHERE id = ? AND user_id = ?");
         $stmt->bind_param("ii", $cartId, $userId);
@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    // Refresh page to update cart count
     header("Location: cart.php");
     exit;
 }
@@ -44,125 +43,120 @@ $stmt = $mysqli->prepare("
     JOIN products p ON c.product_id = p.id
     WHERE c.user_id = ?
 ");
-
 $stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
-
 while ($row = $result->fetch_assoc()) {
     $cartItems[] = $row;
 }
-
 $stmt->close();
+?>
 
-// Show empty cart if no items
-if (empty($cartItems)) {
-    ?>
+<?php if (empty($cartItems)): ?>
     <section class="empty-cart-section">
         <div class="empty-cart-container">
             <h2>Your Cart is empty</h2>
             <a href="/index.php" class="btn-empty">Shop today's deals and find your favorite products!</a>
         </div>
     </section>
-    <style>
-    .empty-cart-section {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 4rem 1rem;
-        min-height: 100vh;
-        background-color: #f3f3f3;
-    }
-    .empty-cart-container {
-        text-align: center;
-        max-width: 600px;
-        width: 100%;
-        background: white;
-        padding: 3rem 2rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    .empty-cart-container h2 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: #111827;
-    }
-    .btn-empty {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        background-color: #ffd814;
-        color: #111827;
-        font-weight: 600;
-        border-radius: 0.5rem;
-        text-decoration: none;
-        transition: background 0.2s;
-    }
-    .btn-empty:hover { background-color: #f7ca00; }
-    </style>
-    <?php
-    include __DIR__ . '/includes/footer.php';
-    exit;
-}
-?>
+<?php else: ?>
+    <section class="cart-section">
+        <h2>Your Shopping Cart</h2>
+        <div class="cart-main">
+            <div class="cart-items">
+                <?php
+                $grandTotal = 0;
+                foreach ($cartItems as $item):
+                    $total = $item['price'] * $item['quantity'];
+                    $grandTotal += $total;
+                    $slug = !empty($item['slug']) ? $item['slug'] : strtolower(str_replace(' ', '-', $item['title']));
+                ?>
+                <div class="cart-item">
+                    <div class="cart-item-image">
+                        <img src="/assets/images/<?php echo $slug; ?>.png" 
+                             alt="<?php echo htmlspecialchars($item['title']); ?>">
+                    </div>
 
-<section class="cart-section">
-    <h2>Your Shopping Cart</h2>
-    <div class="cart-main">
-        <div class="cart-items">
-            <?php
-            $grandTotal = 0;
-            foreach ($cartItems as $item):
-                $total = $item['price'] * $item['quantity'];
-                $grandTotal += $total;
-            ?>
-            <div class="cart-item">
-               <div class="cart-item-image">
-                    <?php 
-                        $slug = strtolower(str_replace(' ', '-', $item['title']));
-                    ?>
-                    <img src="/assets/images/<?php echo $slug; ?>.png" 
-                        alt="<?php echo htmlspecialchars($item['title']); ?>">
-                </div>
-
-
-                <div class="cart-item-info">
-                    <h3><?php echo htmlspecialchars($item['title']); ?></h3>
-                    <p class="price">$<?php echo number_format($item['price'], 2); ?></p>
-                    <div class="cart-actions">
-                        <form method="POST" class="quantity-form">
-                            <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
-                            <label>Qty:
-                                <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1">
-                            </label>
-                            <button type="submit" name="update_quantity" class="btn-update">Update</button>
-                        </form>
-                        <form method="POST" class="remove-form">
-                            <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
-                            <button type="submit" name="remove_item" class="btn-remove">Remove</button>
-                        </form>
-                        <button class="btn-save">Save for later</button>
+                    <div class="cart-item-info">
+                        <h3><?php echo htmlspecialchars($item['title']); ?></h3>
+                        <p class="price">$<?php echo number_format($item['price'], 2); ?></p>
+                        <div class="cart-actions">
+                            <form method="POST" class="quantity-form">
+                                <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
+                                <label>Qty:
+                                    <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1">
+                                </label>
+                                <button type="submit" name="update_quantity" class="btn-update">Update</button>
+                            </form>
+                            <form method="POST" class="remove-form">
+                                <input type="hidden" name="cart_id" value="<?php echo $item['cart_id']; ?>">
+                                <button type="submit" name="remove_item" class="btn-remove">Remove</button>
+                            </form>
+                            <button class="btn-save">Save for later</button>
+                        </div>
+                    </div>
+                    <div class="cart-item-total">
+                        $<?php echo number_format($total, 2); ?>
                     </div>
                 </div>
-                <div class="cart-item-total">
-                    $<?php echo number_format($total, 2); ?>
-                </div>
+                <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
-        </div>
 
-        <div class="cart-summary">
-            <h3>Order Summary</h3>
-            <p>Items: <?php echo count($cartItems); ?></p>
-            <p><strong>Subtotal:</strong> $<?php echo number_format($grandTotal, 2); ?></p>
-            <a href="checkout.php" class="btn-checkout">Proceed to Checkout</a>
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <p>Items: <?php echo count($cartItems); ?></p>
+                <p><strong>Subtotal:</strong> $<?php echo number_format($grandTotal, 2); ?></p>
+                <a href="checkout.php" class="btn-checkout">Proceed to Checkout</a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+<?php endif; ?>
+
+<?php include __DIR__ . '/includes/footer.php'; // Include footer at the bottom ?>
 
 <style>
+/* Empty Cart Section */
+.empty-cart-section {
+    display: flex;
+    flex-direction: column; /* stack header, content, footer */
+    justify-content: center; /* center content vertically */
+    align-items: center;
+    min-height: calc(100vh - 180px); /* adjust based on header+footer height */
+    padding: 2rem 1rem; /* reduce padding */
+    background-color: #f3f3f3;
+    box-sizing: border-box;
+}
+.empty-cart-container {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    background: white;
+    padding: 2rem; /* slightly smaller */
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.empty-cart-container h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #111827;
+}
+.btn-empty {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #ffd814;
+    color: #111827;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.btn-empty:hover { background-color: #f7ca00; }
+
+/* Cart Section */
 .cart-section {
-    min-height: 100vh;
+    min-height: 80vh;
     padding: 2rem;
     background-color: #f3f3f3;
 }
@@ -175,8 +169,6 @@ if (empty($cartItems)) {
     gap: 2rem;
     flex-wrap: wrap;
 }
-
-/* Cart items */
 .cart-items {
     flex: 2;
     display: flex;
@@ -192,14 +184,13 @@ if (empty($cartItems)) {
     gap: 1rem;
 }
 .cart-item-image img {
-    width: 150px;      /* fixed width */
-    height: 150px;     /* fixed height */
-    object-fit: cover; /* cover to fill the box nicely */
-    border-radius: 0.5rem; /* rounded corners */
-    border: 1px solid #e2e2e2; /* subtle border for better separation */
-    background-color: #fff; /* fallback bg color */
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e2e2;
+    background-color: #fff;
 }
-
 .cart-item-info {
     flex: 2;
     display: flex;
@@ -241,7 +232,6 @@ if (empty($cartItems)) {
 .btn-save { background-color: #f0f0f0; color: #111; }
 .btn-save:hover { background-color: #e0e0e0; }
 
-/* Item total */
 .cart-item-total {
     flex: 0 0 120px;
     text-align: right;
@@ -251,7 +241,6 @@ if (empty($cartItems)) {
     align-self: center;
 }
 
-/* Cart summary */
 .cart-summary {
     flex: 1;
     background: white;
@@ -293,8 +282,3 @@ if (empty($cartItems)) {
     }
 }
 </style>
-
-
-<?php
-include __DIR__ . '/includes/footer.php';
-?>
