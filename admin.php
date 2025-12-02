@@ -44,6 +44,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="page-wrapper">
     <div class="shop-content-wrapper">
+
         <h2 class="dashboard-title">User Activity Dashboard</h2>
 
         <table class="admin-table">
@@ -56,72 +57,127 @@ include __DIR__ . '/includes/header.php';
                     <th>Visited At</th>
                 </tr>
             </thead>
+
             <tbody>
                 <?php foreach ($visits as $v): ?>
                     <tr>
                         <td><?= htmlspecialchars($v['username']) ?></td>
                         <td><?= htmlspecialchars($v['company_name']) ?></td>
-                        <td><?= htmlspecialchars($v['page_type']) ?></td>
+
+                        <td>
+                            <span class="type-badge <?= htmlspecialchars($v['page_type']) ?>">
+                                <?= htmlspecialchars(ucfirst($v['page_type'])) ?>
+                            </span>
+                        </td>
+
                         <td><?= htmlspecialchars($v['product_title'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($v['visited_at']) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
     </div>
 
     <?php include __DIR__ . '/includes/footer.php'; ?>
 </div>
 
 <style>
+
+/* PAGE LAYOUT */
 .page-wrapper {
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 180px);
 }
 
-/* ✨ Unique wrapper for ADMIN PAGE ONLY */
 .shop-content-wrapper {
-    display: block;            /* Avoid grid from header */
-    width: 100%;               /* Full width */
-    padding: 2rem;             /* Spacing */
-    clear: both;               /* Prevent header layout interference */
+    width: 100%;
+    padding: 2rem;
+    clear: both;
     box-sizing: border-box;
 }
 
-/* Dashboard title */
 .dashboard-title {
-    display: block;
+    font-size: 2rem;
+    font-weight: 700;
     margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    font-weight: 600;
+    color: #111827;
 }
 
-/* Admin table styling */
+/* ============================
+   MODERN ADMIN TABLE
+   ============================ */
 .admin-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background: #fff;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);    
+    box-shadow: 0 8px 22px rgba(0,0,0,0.06);
 }
 
-.admin-table th, .admin-table td {
-    border: 1px solid #e5e7eb;
-    padding: 0.75rem;
-    text-align: left;
+/* HEADER — fancy gradient like Orders page */
+.admin-table thead th {
+    padding: 1rem;
+    background: rgba(35, 47, 62, 1);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+    border-bottom: 2px solid rgba(255,255,255,0.12);
 }
 
-.admin-table th {
-    background-color: #f3f4f6;
+/* ROW CELLS */
+.admin-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #1f2937;
+}
+
+/* Zebra row */
+.admin-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+/* Hover highlight */
+.admin-table tbody tr:hover td {
+    background: #f3f4f6;
+    transition: 0.2s ease-in-out;
+}
+
+/* ============================
+   PAGE TYPE BADGES
+   ============================ */
+.type-badge {
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.78rem;
     font-weight: 600;
+    display: inline-block;
+    text-transform: capitalize;
 }
 
-.admin-table tr:nth-child(even) {
-    background-color: #f9fafb;
+/* Product */
+.type-badge.product {
+    background: #dbeafe;
+    color: #1e40af;
 }
 
+/* Company page */
+.type-badge.company {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Generic page */
+.type-badge.page {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+/* FOOTER */
 footer {
     background: #232f3e;
     color: white;

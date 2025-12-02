@@ -39,21 +39,23 @@ if (isset($_SESSION['user_id'])) {
 
     <nav class="header-right">
         <?php if (isset($_SESSION['username'])): ?>
-            <span class="account-link">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
-            <a href="/orders.php" class="orders-link">Orders</a>
+            <div class="dropdown">
+                <button class="dropbtn">Hello, <?= htmlspecialchars($_SESSION['username']) ?> ▼</button>
+                <div class="dropdown-content">
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                        <a href="/admin.php" style="text-decoration: none;">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="/orders.php" style="text-decoration: none;">Orders</a>
+                    <a href="/logout.php" style="text-decoration: none;">Logout</a>
+                </div>
+            </div>
+
             <a href="/cart.php" class="cart-link" aria-label="Cart">
                 🛒<span class="cart-count"><?php echo $cartCount; ?></span>
             </a>
-
-            <!-- Show Admin Panel link only for admins -->
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                <a href="/admin.php" class="admin-link">Admin Panel</a>
-            <?php endif; ?>
-
-            <a href="/logout.php" class="logout-link">Logout</a>
         <?php else: ?>
             <a href="/login.php" class="account-link">Hello, Log in</a>
-            <a href="/orders.php" class="orders-link">Orders</a>
+            <!-- <a href="/orders.php" class="orders-link">Orders</a> -->
             <a href="/cart.php" class="cart-link" aria-label="Cart">
                 🛒<span class="cart-count">0</span>
             </a>
@@ -75,6 +77,58 @@ if (isset($_SESSION['user_id'])) {
         margin: 1rem;
         padding: 0 1rem;
     }
+
+    /* Dropdown container */
+    header .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    header .dropbtn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        padding: 0;
+    }
+
+    header .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        background-color: white;
+        min-width: 160px;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+        border-radius: 0.5rem;
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    header .dropdown-content a {
+        color: #111827;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        display: block;
+        font-size: 0.95rem;
+    }
+
+    header .dropdown-content a:hover {
+        background-color: #f3f4f6;
+    }
+
+    header .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    header .dropbtn::after {
+        content: '';
+        display: inline-block;
+        margin-left: 0.25rem;
+    }
+
+
 
     .hero {
         background: #111827;
