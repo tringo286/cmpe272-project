@@ -1,3 +1,19 @@
+<?php
+$cartCount = 0;
+
+if (isset($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id'];
+    $stmt = $mysqli->prepare("SELECT SUM(quantity) as total FROM cart WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $cartCount = intval($row['total']);
+    }
+    $stmt->close();
+}
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,10 +31,11 @@
     </div>
 
     <div class="header-center">
-        <form method="GET" class="search-form">
-            <input type="text" name="q" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>" placeholder="Search products..." aria-label="Search products" />
+       <form method="GET" class="search-form">
+            <input type="text" name="q" placeholder="Search products..." aria-label="Search products" />
             <button type="submit">🔍</button>
         </form>
+
     </div>
 
     <nav class="header-right">
@@ -26,7 +43,7 @@
             <span class="account-link">Hello, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
             <a href="/orders.php" class="orders-link">Orders</a>
             <a href="/cart.php" class="cart-link" aria-label="Cart">
-                🛒<span class="cart-count">0</span>
+                🛒<span class="cart-count"><?php echo $cartCount; ?></span>
             </a>
             <a href="/logout.php" class="logout-link">Logout</a>
         <?php else: ?>

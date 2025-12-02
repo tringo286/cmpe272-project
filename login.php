@@ -3,12 +3,16 @@ session_start();
 require __DIR__ . '/db.php';
 include __DIR__ . '/includes/header.php';
 
+// Get redirect URL from GET (default to index.php)
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     $password = $_POST['password'];
+    // Get redirect from POST (hidden input)
+    $redirect = isset($_POST['redirect']) ? $_POST['redirect'] : 'index.php';
 
     if ($email && $password) {
-        // Correct table and columns
         $stmt = $mysqli->prepare('SELECT id, username, password FROM project_users WHERE email = ?');
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -17,11 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetch() && password_verify($password, $hashedPassword)) {
             $_SESSION['user_id'] = $id;
             $_SESSION['username'] = $username;
-            header('Location: index.php');
+            header('Location: ' . $redirect);
             exit();
         } else {
             $error = 'Invalid email or password.';
         }
+        $stmt->close();
     } else {
         $error = 'Please enter a valid email and password.';
     }
@@ -137,11 +142,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="post" action="login.php" class="login-form">
         <h2>Login</h2>
 
-        <?php
-        if (isset($error)) {
-            echo '<div class="login-error">' . htmlspecialchars($error) . '</div>';
-        }
-        ?>
+        <?php if (isset($error)): ?>
+            <div class="login-error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <!-- Hidden input for redirect -->
+        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
 
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required autofocus>
