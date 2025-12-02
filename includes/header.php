@@ -20,7 +20,7 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="utf-8">
     <title>MarketHub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="../styles/index.css">
+    <link rel="stylesheet" href="/../styles/index.css">
 </head>
 <body>
 <header>
