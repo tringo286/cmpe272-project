@@ -93,8 +93,8 @@ if (!file_exists($imagePath) || empty($product['slug'])) {
 ?>
 
 <section class="hero">
-    <h2><?php echo htmlspecialchars($product['title']); ?></h2>
-    <p>by <?php echo htmlspecialchars($product['seller']); ?></p>
+    <h2>🔥 Today's Deal: Up to 50% Off!</h2>
+    <p>Grab your favorite products before the deal ends!</p>
 </section>
 
 <section class="content-wrapper">

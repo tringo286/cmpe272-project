@@ -259,7 +259,7 @@ $stmt->close();
 .btn-clear {
     background: #e5e7eb;
     padding: 0.5rem 1rem;
-    border-radius: 6px;
+    border-radius: 0.75rem;
     text-decoration: none;
     color: #111;
     margin-top: 0.5rem;
