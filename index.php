@@ -32,6 +32,8 @@ $prices = [
 // ===============================================
 // BUILD SQL QUERY
 // ===============================================
+$top5Selected = isset($_GET['top5']);
+
 $sql = "
     SELECT 
         p.id,
@@ -40,7 +42,7 @@ $sql = "
         p.description,
         p.price,
         p.seller,
-        IFNULL(AVG(r.rating), 0) AS avg_rating,
+        IFNULL(AVG(r.rating),0) AS avg_rating,
         COUNT(r.id) AS review_count
     FROM products p
     LEFT JOIN reviews r ON p.id = r.product_id
@@ -49,7 +51,6 @@ $sql = "
 
 $params = [];
 $types = '';
-
 
 // Search term
 if ($searchQuery !== '') {
@@ -82,12 +83,8 @@ if (!empty($selectedPrices)) {
     }
 }
 
-
-// ===============================================
-// Rating filter must be applied in HAVING
-// ===============================================
+// Rating filter
 $having = [];
-
 if (!empty($selectedRatings)) {
     foreach ($selectedRatings as $rating) {
         $rating = (int)$rating;
@@ -97,11 +94,17 @@ if (!empty($selectedRatings)) {
 
 $sql .= " GROUP BY p.id";
 
+// Apply rating HAVING
 if (!empty($having)) {
     $sql .= " HAVING " . implode(" OR ", $having);
 }
 
-$sql .= " ORDER BY p.created_at DESC";
+// Apply Top 5 logic
+if ($top5Selected) {
+    $sql .= " ORDER BY avg_rating DESC LIMIT 5";
+} else {
+    $sql .= " ORDER BY p.created_at DESC";
+}
 
 
 // ===============================================
@@ -140,7 +143,8 @@ $stmt->close();
         
         <a href="redirect.php?company_id=2&url=https://lambertnguyen.cloud/" target="_blank" class="partner-btn">Lambert Nguyen Company</a>
         
-        <a href="redirect.php?company_id=3&url=https://partner2.com" target="_blank" class="partner-btn">PureBite</a>
+        <a href="redirect.php?company_id=3&url=https://purebite-beauty.onrender.com/" target="_blank" class="partner-btn">PureBite</a>
+
     </div>
 
 </section>
@@ -151,6 +155,12 @@ $stmt->close();
     <!-- ========== SIDEBAR ========== -->
     <aside class="sidebar">
         <form method="GET">
+
+            <h3>Top 5 Products</h3>
+            <label style="display: block; margin-bottom: 30px;">
+                <input type="checkbox" name="top5" value="1" <?= isset($_GET['top5']) ? 'checked' : '' ?>>
+                Show Top 5 Highest Rated
+            </label>
 
             <h3>Filter by Price</h3>
             <?php foreach ($prices as $label => $r): ?>

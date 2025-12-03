@@ -34,7 +34,7 @@ $userId = $_SESSION['user_id'];
 $allowedUrls = [
     1 => 'https://php-mysql-hosting-project.onrender.com',
     2 => 'https://lambertnguyen.cloud/',
-    3 => 'https://partner2.com'
+    3 => 'https://purebite-beauty.onrender.com/'
 ];
 
 if (!isset($allowedUrls[$companyId]) || $allowedUrls[$companyId] !== $url) {
