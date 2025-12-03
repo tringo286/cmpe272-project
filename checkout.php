@@ -2,6 +2,10 @@
 session_start();
 include __DIR__ . '/db.php';
 
+// Load environment variables
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
@@ -38,60 +42,47 @@ $subtotal = 0;
 foreach ($cartItems as $item) {
     $subtotal += $item['price'] * $item['quantity'];
 }
-
-$shipping = 5.99; // fixed shipping fee
-$tax = $subtotal * 0.08; // 8% sales tax
+$shipping = 5.99;
+$tax = $subtotal * 0.08;
 $total = $subtotal + $shipping + $tax;
-
 ?>
 
 <section class="checkout-section">
     <h2>Checkout</h2>
     <div class="checkout-wrapper">
-        <!-- LEFT: Shipping & Payment -->
+        <!-- LEFT: Shipping & Stripe -->
         <div class="checkout-left">
             <h3>Shipping Address</h3>
-            <form method="POST" action="process_order.php">
-                <label>
-                    Full Name:<br>
-                    <input type="text" name="fullname" required>
-                </label>
-                <label>
-                    Address:<br>
-                    <input type="text" name="address" required>
-                </label>
-                <label>
-                    City:<br>
-                    <input type="text" name="city" required>
-                </label>
+            <label>
+                Full Name:<br>
+                <input type="text" name="fullname" required>
+            </label>
+            <label>
+                Address:<br>
+                <input type="text" name="address" required>
+            </label>
+            <label>
+                City:<br>
+                <input type="text" name="city" required>
+            </label>
 
-                <h3>Payment Method</h3>
-                <label>
-                    <input type="radio" name="payment_method" value="card" checked> Credit / Debit Card
-                </label>
-                <label>
-                    <input type="radio" name="payment_method" value="cod"> Cash on Delivery
-                </label>
-
-                <h3>Order Summary</h3>
-                <div class="order-summary">
-                    <?php foreach ($cartItems as $item): ?>
-                        <div class="summary-item">
-                            <span><?php echo htmlspecialchars($item['title']); ?> x <?php echo $item['quantity']; ?></span>
-                            <span>$<?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                    <div class="summary-total"><span>Subtotal:</span><span>$<?php echo number_format($subtotal, 2); ?></span></div>
-                    <div class="summary-total"><span>Shipping:</span><span>$<?php echo number_format($shipping, 2); ?></span></div>
-                    <div class="summary-total"><span>Tax (8%):</span><span>$<?php echo number_format($tax, 2); ?></span></div>
-                    <div class="summary-total summary-grand">
-                        <strong>Total:</strong>
-                        <strong>$<?php echo number_format($total, 2); ?></strong>
+            <h3>Order Summary</h3>
+            <div class="order-summary">
+                <?php foreach ($cartItems as $item): ?>
+                    <div class="summary-item">
+                        <span><?php echo htmlspecialchars($item['title']); ?> x <?php echo $item['quantity']; ?></span>
+                        <span>$<?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
                     </div>
-                </div>
+                <?php endforeach; ?>
+                <div class="summary-total"><span>Subtotal:</span><span>$<?php echo number_format($subtotal, 2); ?></span></div>
+                <div class="summary-total"><span>Shipping:</span><span>$<?php echo number_format($shipping, 2); ?></span></div>
+                <div class="summary-total"><span>Tax (8%):</span><span>$<?php echo number_format($tax, 2); ?></span></div>
+                <div class="summary-total summary-grand"><strong>Total:</strong><strong>$<?php echo number_format($total, 2); ?></strong></div>
+            </div>
 
-                <button type="submit" class="btn-place-order">Place Order</button>
-            </form>
+            <button type="button" id="payButton" class="btn-place-order">
+                Pay with Card (Stripe)
+            </button>
         </div>
 
         <!-- RIGHT: Your Items -->
@@ -111,111 +102,171 @@ $total = $subtotal + $shipping + $tax;
     </div>
 </section>
 
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.getElementById('payButton').addEventListener('click', function () {
+
+    const fullname = document.querySelector('[name="fullname"]').value;
+    const address = document.querySelector('[name="address"]').value;
+    const city = document.querySelector('[name="city"]').value;
+
+    if (!fullname || !address || !city) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Please fill all fields!',
+            timer: 2500,
+            showConfirmButton: false
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('fullname', fullname);
+    formData.append('address', address);
+    formData.append('city', city);
+
+    fetch('create_checkout_session.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Error',
+                text: data.error
+            });
+            return;
+        }
+        const stripe = Stripe("<?php echo $_ENV['STRIPE_PUBLISHABLE_KEY']; ?>");
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+    });
+});
+</script>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
 
 <style>
-    /* ===================== CHECKOUT PAGE CSS ===================== */
+/* ===================== MODERN CHECKOUT PAGE ===================== */
 
-/* PAGE LAYOUT */
+/* GENERAL PAGE LAYOUT */
 .checkout-section {
-    padding: 1rem;
-    background-color: #f3f3f3;
+    padding: 2rem;
+    background-color: #f5f5f5;
+    font-family: 'Inter', sans-serif;
 }
 
 .checkout-section h2 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #111827;
+    text-align: center;
+    font-weight: 700;
 }
 
+/* FLEX LAYOUT */
 .checkout-wrapper {
     display: flex;
-    flex-direction: column; /* vertical layout by default */
+    flex-direction: column;
     gap: 2rem;
 }
 
-/* LEFT PANEL: SHIPPING & PAYMENT FORM */
-.checkout-left {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+.checkout-left, .checkout-right {
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
+/* SHIPPING FORM */
 .checkout-left h3 {
-    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: #374151;
 }
 
 .checkout-left label {
     display: block;
-    margin-bottom: 0.8rem;
+    margin-bottom: 1rem;
     font-weight: 500;
+    color: #374151;
 }
 
-.checkout-left input[type="text"],
-.checkout-left input[type="email"],
-.checkout-left input[type="number"] {
+.checkout-left input[type="text"] {
     width: 100%;
-    padding: 0.5rem;
-    margin-top: 0.25rem;
-    border: 1px solid #ccc;
-    border-radius: 0.25rem;
-    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+     box-sizing: border-box;
 }
 
+.checkout-left input[type="text"]:focus {
+    border-color: #2563eb;
+    outline: none;
+}
+
+/* ORDER SUMMARY */
 .order-summary {
-    margin-top: 1rem;
+    margin-top: 2rem;
     border-top: 1px solid #e5e7eb;
-    padding-top: 1rem;
+    padding-top: 1.5rem;
 }
 
 .summary-item,
 .summary-total {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
 }
 
 .summary-grand {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
+    color: #111827;
 }
 
+/* BUTTON */
 .btn-place-order {
     width: 100%;
-    background: #ffd814;
-    padding: 0.75rem;
-    border: none;
-    margin-top: 1rem;
+    padding: 0.9rem;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    color: #fff;
     font-size: 1.1rem;
-    font-weight: bold;
-    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.75rem;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 1.5rem;
 }
 
 .btn-place-order:hover {
-    background: #f7ca00;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* RIGHT PANEL: YOUR ITEMS */
-/* RIGHT PANEL: YOUR ITEMS */
-.checkout-right {
-    background: #fff;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column; /* stack items vertically */
-    gap: 1rem;               /* spacing between items */
-    overflow: visible;       /* allow natural height */
+/* YOUR ITEMS */
+.checkout-right h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #111827;
 }
 
 .checkout-item {
     display: flex;
-    flex-direction: row; /* image + info side by side */
-    gap: 0.75rem;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 0;
     border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 0.5rem;
-    align-items: center; /* vertically center text next to image */
 }
 
 .checkout-item:last-child {
@@ -223,11 +274,11 @@ $total = $subtotal + $shipping + $tax;
 }
 
 .checkout-item img {
-    width: 100px;         /* unified smaller width */
-    height: 100px;        /* unified smaller height */
-    border-radius: 0.25rem;
+    width: 80px;   /* smaller image */
+    height: 80px;
+    border-radius: 0.5rem;
     object-fit: cover;
-    flex-shrink: 0;      /* prevent image from shrinking */
+    flex-shrink: 0;
 }
 
 .item-info {
@@ -237,23 +288,26 @@ $total = $subtotal + $shipping + $tax;
 }
 
 .item-info p {
-    margin: 0;
-    font-size: 0.9rem;
+    margin: 2px 0;
+    font-size: 0.95rem;
+    color: #374151;
 }
 
-
 /* RESPONSIVE LAYOUT */
-@media (min-width: 900px) {
+@media(min-width: 900px) {
     .checkout-wrapper {
-        flex-direction: row; /* side by side on desktop */
+        flex-direction: row;
+        gap: 2rem;
         align-items: flex-start;
     }
+
     .checkout-left {
         flex: 2;
     }
+
     .checkout-right {
         flex: 1;
     }
 }
-
 </style>
+
