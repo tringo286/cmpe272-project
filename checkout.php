@@ -2,9 +2,16 @@
 session_start();
 include __DIR__ . '/db.php';
 
-// Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// Only load .env if STRIPE_SECRET_KEY isn't already set
+if (getenv('STRIPE_SECRET_KEY') === false) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
+
+// Use the Stripe keys from environment
+$stripeSecret = getenv('STRIPE_SECRET_KEY');
+$stripePub    = getenv('STRIPE_PUBLISHABLE_KEY');
+\Stripe\Stripe::setApiKey($stripeSecret);
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -81,7 +88,7 @@ $total = $subtotal + $shipping + $tax;
             </div>
 
             <button type="button" id="payButton" class="btn-place-order">
-                Pay with Card (Stripe)
+                Pay with Card
             </button>
         </div>
 
@@ -142,7 +149,7 @@ document.getElementById('payButton').addEventListener('click', function () {
             });
             return;
         }
-        const stripe = Stripe("<?php echo $_ENV['STRIPE_PUBLISHABLE_KEY']; ?>");
+        const stripe = Stripe("<?= $stripePub ?>");
         stripe.redirectToCheckout({ sessionId: data.sessionId });
     });
 });

@@ -3,12 +3,15 @@ session_start();
 require 'vendor/autoload.php';
 include __DIR__ . '/db.php';
 
-// Load .env file
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// Only load .env if STRIPE_SECRET_KEY isn't already defined
+if (getenv('STRIPE_SECRET_KEY') === false) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
 
-// Use the Stripe key from .env
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+// Use the Stripe secret key from environment
+$stripeSecret = getenv('STRIPE_SECRET_KEY');
+\Stripe\Stripe::setApiKey($stripeSecret);
 
 // Validate input
 $fullname = $_POST['fullname'] ?? '';
