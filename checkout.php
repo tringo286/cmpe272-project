@@ -13,10 +13,6 @@ if (empty($_ENV['STRIPE_SECRET_KEY'])) {
 $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
 $stripePub    = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? null;
 
-if (!$stripeSecret || !$stripePub) {
-    die("Stripe API keys are not set.");
-}
-
 \Stripe\Stripe::setApiKey($stripeSecret);
 
 // Redirect if not logged in
