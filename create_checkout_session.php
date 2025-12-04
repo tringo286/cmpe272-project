@@ -125,8 +125,7 @@ try {
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 30,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_CAINFO => __DIR__ . '/vendor/stripe/stripe-php/lib/../../../cacert.pem'
+        CURLOPT_SSL_VERIFYPEER => true
     ]);
 
     $response = curl_exec($ch);
