@@ -6,7 +6,7 @@ include __DIR__ . '/db.php';
 
 // Load .env ALWAYS — your environment relies on it
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+$dotenv->safeLoad();
 
 // Get Stripe keys from $_ENV (NOT getenv)
 $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;

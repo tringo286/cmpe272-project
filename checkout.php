@@ -6,7 +6,7 @@ include __DIR__ . '/db.php';
 // Load .env only if missing
 if (empty($_ENV['STRIPE_SECRET_KEY'])) {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
+    $dotenv->safeLoad();
 }
 
 // Use environment variables from $_ENV
