@@ -143,7 +143,7 @@ $stmt->close();
         
         <a href="redirect.php?company_id=2&url=https://lambertnguyen.cloud/" target="_blank" class="partner-btn">Lambert Nguyen Company</a>
         
-        <a href="redirect.php?company_id=3&url=https://purebite-beauty.onrender.com/" target="_blank" class="partner-btn">PureBite</a>
+        <a href="redirect.php?company_id=3&url=http://anukrithimyadala.42web.io/" target="_blank" class="partner-btn">PureBite</a>
 
     </div>
 
