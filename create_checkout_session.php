@@ -94,31 +94,39 @@ $line_items[] = [
 
 $baseUrl = "https://cmpe272-project.onrender.com";
 
-// Use direct cURL JSON request instead of stripe-php (avoids header/body encoding issue)
+// Use direct cURL with form-encoded body (Render cURL issue with JSON/headers)
 try {
     $payload = [
-        'payment_method_types' => ['card'],
+        'payment_method_types[0]' => 'card',
         'mode' => 'payment',
-        'line_items' => $line_items,
-        'success_url' => $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}',
-        'cancel_url'  => $baseUrl . '/checkout.php'
     ];
+
+    // Flatten line_items manually for form encoding
+    foreach ($line_items as $i => $item) {
+        $payload["line_items[$i][price_data][currency]"] = $item['price_data']['currency'];
+        $payload["line_items[$i][price_data][unit_amount]"] = $item['price_data']['unit_amount'];
+        $payload["line_items[$i][price_data][product_data][name]"] = $item['price_data']['product_data']['name'];
+        if (!empty($item['price_data']['product_data']['images'])) {
+            $payload["line_items[$i][price_data][product_data][images][0]"] = $item['price_data']['product_data']['images'][0];
+        }
+        $payload["line_items[$i][quantity]"] = $item['quantity'];
+    }
+
+    $payload['success_url'] = $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}';
+    $payload['cancel_url'] = $baseUrl . '/checkout.php';
 
     $ch = curl_init('https://api.stripe.com/v1/checkout/sessions');
-    $jsonBody = json_encode($payload);
-
-    $headers = [
-        'Authorization: Bearer ' . $stripeSecret,
-        'Content-Type: application/json',
-        'User-Agent: MarketHub/1.0'
-    ];
+    $formBody = http_build_query($payload);
 
     curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $jsonBody,
-        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_POST => 1,
+        CURLOPT_POSTFIELDS => $formBody,
+        CURLOPT_USERPWD => $stripeSecret . ':',
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 30
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_CAINFO => __DIR__ . '/vendor/stripe/stripe-php/lib/../../../cacert.pem'
     ]);
 
     $response = curl_exec($ch);
@@ -136,14 +144,14 @@ try {
 
     if ($httpCode >= 400) {
         http_response_code($httpCode);
-        $errorMsg = $decoded['error']['message'] ?? 'Stripe API Error';
-        echo json_encode(['error' => $errorMsg]);
+        $errorMsg = $decoded['error']['message'] ?? $response;
+        echo json_encode(['error' => 'Stripe API Error: ' . $errorMsg]);
         exit;
     }
 
     if (!isset($decoded['id'])) {
         http_response_code(500);
-        echo json_encode(['error' => 'Invalid Stripe response']);
+        echo json_encode(['error' => 'Invalid Stripe response: ' . $response]);
         exit;
     }
 
