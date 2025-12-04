@@ -156,47 +156,66 @@ $stmt->close();
     <aside class="sidebar">
         <form method="GET">
 
-            <h3>Top 5 Products</h3>
-            <label style="display: block; margin-bottom: 30px;">
-                <input type="checkbox" name="top5" value="1" <?= isset($_GET['top5']) ? 'checked' : '' ?>>
-                Show Top 5 Highest Rated
-            </label>
+            <!-- ⭐ Top 5 Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Top 5 Products ▾</div>
+                <div class="filter-content">
+                    <label style="display:block; margin-bottom:10px;">
+                        <input type="checkbox" name="top5" value="1"
+                            <?= isset($_GET['top5']) ? 'checked' : '' ?>>
+                        Show Top 5 Highest Rated
+                    </label>
+                </div>
+            </div>
 
-            <h3>Filter by Price</h3>
-            <?php foreach ($prices as $label => $r): ?>
-                <label>
-                    <input type="checkbox" name="price[]" value="<?= htmlspecialchars($label) ?>"
-                        <?= in_array($label, $selectedPrices) ? 'checked' : '' ?>>
-                    <?= htmlspecialchars($label) ?>
-                </label><br>
-            <?php endforeach; ?>
+            <!-- ⭐ Price Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Filter by Price ▾</div>
+                <div class="filter-content">
+                    <?php foreach ($prices as $label => $r): ?>
+                        <label>
+                            <input type="checkbox" name="price[]" value="<?= htmlspecialchars($label) ?>"
+                                <?= in_array($label, $selectedPrices) ? 'checked' : '' ?>>
+                            <?= htmlspecialchars($label) ?>
+                        </label><br>
+                    <?php endforeach; ?>
+                </div>
+            </div>
 
+            <!-- ⭐ Seller Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Filter by Seller ▾</div>
+                <div class="filter-content">
+                    <?php foreach ($sellers as $seller): ?>
+                        <label>
+                            <input type="checkbox" name="seller[]" value="<?= htmlspecialchars($seller) ?>"
+                                <?= in_array($seller, $selectedSellers) ? 'checked' : '' ?>>
+                            <?= htmlspecialchars($seller) ?>
+                        </label><br>
+                    <?php endforeach; ?>
+                </div>
+            </div>
 
-            <h3>Filter by Seller</h3>
-            <?php foreach ($sellers as $seller): ?>
-                <label>
-                    <input type="checkbox" name="seller[]" value="<?= htmlspecialchars($seller) ?>"
-                        <?= in_array($seller, $selectedSellers) ? 'checked' : '' ?>>
-                    <?= htmlspecialchars($seller) ?>
-                </label><br>
-            <?php endforeach; ?>
+            <!-- ⭐ Rating Filter -->
+            <div class="filter-section">
+                <div class="filter-title">Filter by Rating ▾</div>
+                <div class="filter-content">
+                    <?php foreach ([3, 4, 5] as $star): ?>
+                        <label>
+                            <input type="checkbox" name="rating[]" value="<?= $star ?>"
+                                <?= in_array($star, $selectedRatings) ? 'checked' : '' ?>>
+                            <?= str_repeat("⭐", $star) . str_repeat("☆", 5 - $star) ?>
+                        </label><br>
+                    <?php endforeach; ?>
+                </div>
+            </div>
 
-
-            <h3>Filter by Rating</h3>
-            <?php foreach ([3, 4, 5] as $star): ?>
-                <label>
-                    <input type="checkbox" name="rating[]" value="<?= $star ?>"
-                        <?= in_array($star, $selectedRatings) ? 'checked' : '' ?>>
-                    <?= str_repeat("⭐", $star) . str_repeat("☆", 5 - $star) ?>
-                </label><br>
-            <?php endforeach; ?>
-
-            <button type="submit" class="btn-primary">Apply</button>
-
+            <button type="submit" class="btn-primary" style="margin-top:1rem;">Apply</button>
             <a href="index.php" class="btn-clear">Clear</a>
 
         </form>
     </aside>
+
 
 
     <!-- ========== PRODUCT LISTINGS ========== -->
@@ -262,50 +281,93 @@ $stmt->close();
     </div>
 </main>
 
-
 </section>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 
+<script>
+document.querySelectorAll('.filter-title').forEach(title => {
+    title.addEventListener('click', () => {
+        const content = title.nextElementSibling;
+        content.style.display = 
+            content.style.display === 'block' ? 'none' : 'block';
+    });
+});
+</script>
+
 
 <style>
-    .partners-inline-modern {
-    text-align: center;
-    margin: 2rem 0;
+
+    .filter-section {
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.partners-row {
-    display: inline-flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
+.filter-section {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.partners-text {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #111827;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.partner-btn {
-    background: linear-gradient(135deg, #4f46e5, #3b82f6); /* gradient for modern feel */
-    color: #fff;
+.filter-title {
     font-weight: 600;
-    padding: 0.5rem 1.2rem;
-    border-radius: 9999px;   /* pill shape */
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #111827;
 }
 
-.partner-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+.filter-content {
+    display: none;
+    margin-top: 0.5rem;
+    padding-left: 0.3rem;
 }
+
+.filter-title:hover {
+    color: #2563eb;
+}
+
+
+    .partners-inline-modern {
+        text-align: center;
+        margin: 2rem 0;
+    }
+
+    .partners-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .partners-text {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #111827;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .partner-btn {
+        background: linear-gradient(135deg, #4f46e5, #3b82f6); /* gradient for modern feel */
+        color: #fff;
+        font-weight: 600;
+        padding: 0.5rem 1.2rem;
+        border-radius: 9999px;   /* pill shape */
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .partner-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+    }
     /* Keep your card-rating styling */
     .card .card-rating {
         font-size: 1rem;
