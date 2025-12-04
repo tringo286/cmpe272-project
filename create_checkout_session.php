@@ -25,13 +25,20 @@ if (!$stripeSecret) {
 // Set Stripe API key
 \Stripe\Stripe::setApiKey($stripeSecret);
 
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'User not logged in']);
+    exit;
+}
+
 // Validate input
 $fullname = $_POST['fullname'] ?? '';
 $address  = $_POST['address'] ?? '';
 $city     = $_POST['city'] ?? '';
 
 if (!$fullname || !$address || !$city) {
-        http_response_code(400);
+    http_response_code(400);
     echo json_encode(['error' => 'Missing required fields']);
     exit;
 }
@@ -87,76 +94,64 @@ $line_items[] = [
 
 $baseUrl = "https://cmpe272-project.onrender.com";
 
-// --- DEBUG: optional raw curl test (enable with DEBUG_STRIPE=1) ---
-if (!empty($_ENV['DEBUG_STRIPE']) || getenv('DEBUG_STRIPE')) {
-    $debugLog = '/tmp/stripe_debug.log';
-    $testParams = [
-        'payment_method_types' => ['card'],
-        'mode' => 'payment',
-        // pass minimal fake line_items to test encoding
-        'line_items' => $line_items,
-    ];
-
-    $ch = curl_init('https://api.stripe.com/v1/checkout/sessions');
-    $headers = [
-        'Authorization: Bearer ' . $stripeSecret,
-        'Stripe-Version: ' . (isset($_ENV['STRIPE_API_VERSION']) ? $_ENV['STRIPE_API_VERSION'] : \Stripe\Stripe::getApiVersion()),
-        'Content-Type: application/x-www-form-urlencoded'
-    ];
-
-    // build a flattened form body similar to stripe-php v1 encoding
-    $flat = http_build_query($testParams);
-
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $flat);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_VERBOSE, true);
-    $verbose = fopen('/tmp/stripe_curl_verbose.log', 'w+');
-    curl_setopt($ch, CURLOPT_STDERR, $verbose);
-
-    $resp = curl_exec($ch);
-    $info = curl_getinfo($ch);
-    $err = curl_error($ch);
-    curl_close($ch);
-    if (is_resource($verbose)) {
-        fclose($verbose);
-    }
-
-    $out = [
-        'response' => $resp,
-        'curl_info' => $info,
-        'curl_error' => $err,
-        'body_preview' => substr($flat, 0, 1000),
-    ];
-
-    file_put_contents($debugLog, json_encode($out, JSON_PRETTY_PRINT));
-    echo json_encode(['debug' => 'wrote ' . $debugLog, 'out' => $out]);
-    exit;
-}
-
+// Use direct cURL JSON request instead of stripe-php (avoids header/body encoding issue)
 try {
-    $session = \Stripe\Checkout\Session::create([
+    $payload = [
         'payment_method_types' => ['card'],
         'mode' => 'payment',
         'line_items' => $line_items,
         'success_url' => $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}',
         'cancel_url'  => $baseUrl . '/checkout.php'
+    ];
+
+    $ch = curl_init('https://api.stripe.com/v1/checkout/sessions');
+    $jsonBody = json_encode($payload);
+
+    $headers = [
+        'Authorization: Bearer ' . $stripeSecret,
+        'Content-Type: application/json',
+        'User-Agent: MarketHub/1.0'
+    ];
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $jsonBody,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 30
     ]);
-    
-    echo json_encode(['sessionId' => $session->id]);
-} catch (\Stripe\Exception\ApiErrorException $e) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Stripe Error: ' . $e->getMessage()]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        http_response_code(500);
+        echo json_encode(['error' => 'cURL Error: ' . $curlError]);
+        exit;
+    }
+
+    $decoded = json_decode($response, true);
+
+    if ($httpCode >= 400) {
+        http_response_code($httpCode);
+        $errorMsg = $decoded['error']['message'] ?? 'Stripe API Error';
+        echo json_encode(['error' => $errorMsg]);
+        exit;
+    }
+
+    if (!isset($decoded['id'])) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Invalid Stripe response']);
+        exit;
+    }
+
+    echo json_encode(['sessionId' => $decoded['id']]);
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Server Error: ' . $e->getMessage()]);
 }
 exit;
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'User not logged in']);
-    exit;
-}
 
