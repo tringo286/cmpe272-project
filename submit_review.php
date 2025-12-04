@@ -15,6 +15,16 @@ if ($product_id <= 0 || $rating < 1 || $rating > 5 || empty($review_text)) {
     die("Invalid review submission.");
 }
 
+// Verify user exists in database
+$stmtUserCheck = $mysqli->prepare("SELECT id FROM project_users WHERE id = ?");
+$stmtUserCheck->bind_param("i", $user_id);
+$stmtUserCheck->execute();
+$stmtUserCheck->store_result();
+if ($stmtUserCheck->num_rows === 0) {
+    die("User session invalid. Please log in again.");
+}
+$stmtUserCheck->close();
+
 // Optional: prevent duplicate reviews
 $stmtCheck = $mysqli->prepare("SELECT id FROM reviews WHERE product_id = ? AND user_id = ?");
 $stmtCheck->bind_param("ii", $product_id, $user_id);
