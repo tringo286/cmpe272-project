@@ -77,14 +77,16 @@ $line_items[] = [
     'quantity' => 1
 ];
 
-// Create Stripe checkout session
+$baseUrl = "https://cmpe272-project.onrender.com";
+
 $session = \Stripe\Checkout\Session::create([
     'payment_method_types' => ['card'],
     'mode' => 'payment',
     'line_items' => $line_items,
-    'success_url' => 'http://localhost:8000/success.php?session_id={CHECKOUT_SESSION_ID}',
-    'cancel_url'  => 'http://localhost:8000/checkout.php'
+    'success_url' => $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}',
+    'cancel_url'  => $baseUrl . '/checkout.php'
 ]);
+
 
 echo json_encode(['sessionId' => $session->id]);
 exit;
