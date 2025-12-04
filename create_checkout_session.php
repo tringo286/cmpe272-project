@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Set JSON response header FIRST
+header('Content-Type: application/json');
+
 require __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/db.php';
 
@@ -12,6 +15,12 @@ if (empty($_ENV['STRIPE_SECRET_KEY'])) {
 
 // Get Stripe keys from $_ENV
 $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+if (!$stripeSecret) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Stripe API key not configured']);
+    exit;
+}
+
 
 // Set Stripe API key
 \Stripe\Stripe::setApiKey($stripeSecret);
@@ -22,6 +31,7 @@ $address  = $_POST['address'] ?? '';
 $city     = $_POST['city'] ?? '';
 
 if (!$fullname || !$address || !$city) {
+        http_response_code(400);
     echo json_encode(['error' => 'Missing required fields']);
     exit;
 }
@@ -77,14 +87,28 @@ $line_items[] = [
 
 $baseUrl = "https://cmpe272-project.onrender.com";
 
-$session = \Stripe\Checkout\Session::create([
-    'payment_method_types' => ['card'],
-    'mode' => 'payment',
-    'line_items' => $line_items,
-    'success_url' => $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}',
-    'cancel_url'  => $baseUrl . '/checkout.php'
-]);
-
-
-echo json_encode(['sessionId' => $session->id]);
+try {
+    $session = \Stripe\Checkout\Session::create([
+        'payment_method_types' => ['card'],
+        'mode' => 'payment',
+        'line_items' => $line_items,
+        'success_url' => $baseUrl . '/success.php?session_id={CHECKOUT_SESSION_ID}',
+        'cancel_url'  => $baseUrl . '/checkout.php'
+    ]);
+    
+    echo json_encode(['sessionId' => $session->id]);
+} catch (\Stripe\Exception\ApiErrorException $e) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Stripe Error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server Error: ' . $e->getMessage()]);
+}
 exit;
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'User not logged in']);
+    exit;
+}
+
