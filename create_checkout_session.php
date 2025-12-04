@@ -4,11 +4,13 @@ session_start();
 require __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/db.php';
 
-// Load .env ALWAYS — your environment relies on it
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->safeLoad();
+// Load .env for local development (only if keys aren't already set)
+if (empty($_ENV['STRIPE_SECRET_KEY'])) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
 
-// Get Stripe keys from $_ENV (NOT getenv)
+// Get Stripe keys from $_ENV
 $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
 
 // Set Stripe API key
