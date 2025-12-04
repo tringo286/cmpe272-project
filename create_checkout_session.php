@@ -56,7 +56,7 @@ while ($row = $result->fetch_assoc()) {
             'unit_amount' => intval($row['price'] * 100),
             'product_data' => [
                 'name' => $row['title'],
-                'images' => ["http://localhost:8000/assets/images/{$row['id']}.png"] // updated URL
+                "images" => ["https://cmpe272-project.onrender.com/assets/images/{$row['id']}.png"]
             ],
         ],
         'quantity' => $row['quantity']
