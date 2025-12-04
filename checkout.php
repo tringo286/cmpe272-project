@@ -1,16 +1,22 @@
 <?php
 session_start();
+require __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/db.php';
 
-// Only load .env if STRIPE_SECRET_KEY isn't already set
-if (getenv('STRIPE_SECRET_KEY') === false) {
+// Load .env only if missing
+if (empty($_ENV['STRIPE_SECRET_KEY'])) {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
 }
 
-// Use the Stripe keys from environment
-$stripeSecret = getenv('STRIPE_SECRET_KEY');
-$stripePub    = getenv('STRIPE_PUBLISHABLE_KEY');
+// Use environment variables from $_ENV
+$stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+$stripePub    = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? null;
+
+if (!$stripeSecret || !$stripePub) {
+    die("Stripe API keys are not set.");
+}
+
 \Stripe\Stripe::setApiKey($stripeSecret);
 
 // Redirect if not logged in

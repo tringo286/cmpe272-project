@@ -1,16 +1,21 @@
 <?php
 session_start();
-require 'vendor/autoload.php';
+
+require __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/db.php';
 
-// Only load .env if STRIPE_SECRET_KEY isn't already set
-if (getenv('STRIPE_SECRET_KEY') === false) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
+// Always load .env (safe, fast, reliable)
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Use Stripe key from $_ENV (NOT getenv)
+$stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+
+if (!$stripeSecret) {
+    die("FATAL ERROR: Stripe secret key not loaded in create_checkout_session.php");
 }
 
-// Use the Stripe secret key from environment
-$stripeSecret = getenv('STRIPE_SECRET_KEY');
+// Set Stripe API key
 \Stripe\Stripe::setApiKey($stripeSecret);
 
 $sessionId = $_GET['session_id'] ?? null;

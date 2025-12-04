@@ -1,16 +1,21 @@
 <?php
 session_start();
-require 'vendor/autoload.php';
+
+require __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/db.php';
 
-// Only load .env if STRIPE_SECRET_KEY isn't already defined
-if (getenv('STRIPE_SECRET_KEY') === false) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
+// Load .env ALWAYS — your environment relies on it
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Get Stripe keys from $_ENV (NOT getenv)
+$stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
+
+if (!$stripeSecret) {
+    die("Stripe secret key NOT LOADED in create_checkout_session.php");
 }
 
-// Use the Stripe secret key from environment
-$stripeSecret = getenv('STRIPE_SECRET_KEY');
+// Set Stripe API key
 \Stripe\Stripe::setApiKey($stripeSecret);
 
 // Validate input
@@ -51,7 +56,7 @@ while ($row = $result->fetch_assoc()) {
             'unit_amount' => intval($row['price'] * 100),
             'product_data' => [
                 'name' => $row['title'],
-                'images' => ["https://cmpe272-project.onrender.com/assets/images/{$row['id']}.png"] // updated URL
+                'images' => ["http://localhost:8000/assets/images/{$row['id']}.png"] // updated URL
             ],
         ],
         'quantity' => $row['quantity']
@@ -77,8 +82,8 @@ $session = \Stripe\Checkout\Session::create([
     'payment_method_types' => ['card'],
     'mode' => 'payment',
     'line_items' => $line_items,
-    'success_url' => 'https://cmpe272-project.onrender.com/success.php?session_id={CHECKOUT_SESSION_ID}',
-    'cancel_url'  => 'https://cmpe272-project.onrender.com/checkout.php'
+    'success_url' => 'http://localhost:8000/success.php?session_id={CHECKOUT_SESSION_ID}',
+    'cancel_url'  => 'http://localhost:8000/checkout.php'
 ]);
 
 echo json_encode(['sessionId' => $session->id]);
