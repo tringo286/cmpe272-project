@@ -11,10 +11,6 @@ $dotenv->safeLoad();
 // Get Stripe keys from $_ENV (NOT getenv)
 $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? null;
 
-if (!$stripeSecret) {
-    die("Stripe secret key NOT LOADED in create_checkout_session.php");
-}
-
 // Set Stripe API key
 \Stripe\Stripe::setApiKey($stripeSecret);
 
